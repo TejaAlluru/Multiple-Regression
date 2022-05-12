@@ -1,0 +1,311 @@
+---
+title: "Multiple Regression "
+author: "Teja Alluru"
+date: "10/24/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath("D:/MSBA/Autumn/TBANLT540/Multiple Regression Lab"))
+```
+
+In this lab, we will be learning how to perform Multiple Regression. In addition to the two packages from last time "readxl", and "tidyverse", plus a new one "mi". Remember to delete the install packages set of lines before you knit. 
+
+
+```{r include = FALSE}
+#install.packages("mi")
+```
+
+
+```{r library}
+options(scipen = 10000)
+options(digits = 2)
+library(readxl)
+library(tidyverse)
+library(mi)
+
+```
+
+Now we will load the data:
+
+```{r Data}
+MRLabData <- read_excel("Billionaire-Suburb-980039.xlsx")
+summary(MRLabData)
+view(MRLabData)
+```
+
+First thing you always want to do is graph your data:
+
+
+```{r scatterplots}
+A<-ggplot(data=MRLabData, aes(x=BEDS, y=PRICE)) + geom_point(size=2)
+B<-ggplot(data=MRLabData, aes(x=BATHS, y=PRICE)) + geom_point(size=2)
+C<-ggplot(data=MRLabData, aes(x=`SQUARE FEET`, y=PRICE)) + geom_point(size=2)
+D<-ggplot(data=MRLabData, aes(x=`YEAR BUILT`, y=PRICE)) + geom_point(size=2)
+E<-ggplot(data=MRLabData, aes(x=`LOT SIZE`, y=PRICE)) + geom_point(size=2)
+#install.packages("ggpubr")
+library(ggpubr)
+figure <- ggarrange(A, B, C, D, E, 
+          ncol = 3, nrow = 2, 0)
+figure
+
+```
+
+
+```{r histograms}
+par(mfrow=c(2, 3), cex=1, cex.lab=1.5)
+hist(MRLabData$PRICE)
+hist(MRLabData$BEDS)
+hist(MRLabData$BATHS)
+hist(MRLabData$BATHS)
+
+```
+
+
+
+```{r histograms}
+par(mfrow=c(2, 3), cex=1, cex.lab=1.5)
+hist(MRLabData$`SQUARE FEET`)
+hist(MRLabData$`YEAR BUILT`)
+hist(MRLabData$`LOT SIZE`)
+hist(MRLabData$`LOT SIZE`)
+
+
+```
+
+
+```{r }
+A<-ggplot(data=MRLabData, aes(x=BEDS, y=PRICE)) + geom_point(size=2)+geom_smooth()
+A1<-A+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+B<-ggplot(data=MRLabData, aes(x=BATHS, y=PRICE)) + geom_point(size=2)+geom_smooth()
+B1<-B+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+C<-ggplot(data=MRLabData, aes(x=`SQUARE FEET`, y=PRICE)) + geom_point(size=2)+geom_smooth()
+C1<-C+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+D<-ggplot(data=MRLabData, aes(x=`YEAR BUILT`, y=PRICE)) + geom_point(size=2)+geom_smooth()
+D1<-D+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+E<-ggplot(data=MRLabData, aes(x=`LOT SIZE`, y=PRICE)) + geom_point(size=2)+geom_smooth()
+E1<-E+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+figure <- ggarrange(A1, B1, C1, D1, E1, 
+          ncol = 3, nrow = 2,  1)
+figure
+```
+
+Select a subset of data
+
+```{r selectsubset}
+summary(MRLabData)
+MRLAB2 <- MRLabData %>% select(PRICE,BEDS,BATHS,`SQUARE FEET`,`LOT SIZE`,`YEAR BUILT`)
+
+```
+
+
+Delete missing data
+
+```{r deleteMissing}
+summary(MRLAB2)
+MRLAB3 <-  MRLAB2[complete.cases(MRLAB2), ]
+summary(MRLAB3)
+```
+
+
+```{r Regression1}
+
+HouseFit1<-lm(PRICE~BATHS+BEDS+`SQUARE FEET`+`LOT SIZE`+ `YEAR BUILT`, data=MRLAB3)
+summary(HouseFit1)
+```
+
+
+
+```{r Regression2}
+HouseFit2<-lm(PRICE~BEDS+`SQUARE FEET`+`LOT SIZE`, data=MRLAB3)
+summary(HouseFit2)
+```
+
+
+```{r Regression3}
+HouseFit3<-lm(PRICE~`LOT SIZE`,data=MRLAB3)
+summary(HouseFit3)
+```
+
+
+Residuals
+
+```{r Residuals1}
+par(mfrow=c(2, 2), cex=1.5, cex.lab=1.5)
+plot(HouseFit1)
+
+Price.stdres1 <-residuals(HouseFit1)
+
+A<-ggplot(data=MRLAB3, aes(x=BEDS, y=Price.stdres1))+geom_point()
+B<-ggplot(data=MRLAB3, aes(x=BATHS, y=Price.stdres1))+geom_point()
+C<-ggplot(data=MRLAB3, aes(x=`SQUARE FEET`, y=Price.stdres1))+geom_point()
+D<-ggplot(data=MRLAB3, aes(x=`LOT SIZE`, y=Price.stdres1))+geom_point()
+E<-ggplot(data=MRLAB3, aes(x=`YEAR BUILT`, y=Price.stdres1))+geom_point()
+
+figure <- ggarrange(A, B, C, D, E, 
+          ncol = 3, nrow = 2, 0)
+figure
+
+
+```
+
+```{r Residual2}
+par(mfrow=c(2, 2), cex=1.5, cex.lab=1.5)
+plot(HouseFit2)
+
+Price.stdres2 <-residuals(HouseFit2)
+
+A<-ggplot(data=MRLAB3, aes(x=BEDS, y=Price.stdres2))+geom_point()
+A1<-A+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+B<-ggplot(data=MRLAB3, aes(x=BATHS, y=Price.stdres2))+geom_point()
+B1<-B+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+C<-ggplot(data=MRLAB3, aes(x=`SQUARE FEET`, y=Price.stdres2))+geom_point()
+C1<-C+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+D<-ggplot(data=MRLAB3, aes(x=`LOT SIZE`, y=Price.stdres2))+geom_point()
+D1<-D+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+figure1 <- ggarrange(A1, B1, C1, D1, 
+          ncol = 2, nrow = 2, 0)
+figure1
+
+```
+
+
+```{r Residual3}
+par(mfrow=c(2, 2), cex=1.5, cex.lab=1.5)
+plot(HouseFit3)
+
+Price.stdres3 <-residuals(HouseFit3)
+
+
+A<-ggplot(data=MRLAB3, aes(x=`LOT SIZE`, y=Price.stdres3))+geom_point()
+A+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+```
+
+
+```{r logs}
+MRLAB3$LOGPRICE <- log(MRLAB3$PRICE)
+MRLAB3$LOGBed <- log(MRLAB3$BEDS)
+MRLAB3$LOGBath <- log(MRLAB3$BATHS)
+MRLAB3$LOGSqFoot <- log(MRLAB3$`SQUARE FEET`)
+MRLAB3$LOGLotSize <- log(MRLAB3$`LOT SIZE`)
+MRLAB3$LOGYearBuilt <- log(MRLAB3$`YEAR BUILT`)
+```
+
+```{r histograms}
+par(mfrow=c(2, 3), cex=1, cex.lab=1.5)
+hist(MRLAB3$LOGPRICE)
+hist(MRLAB3$LOGBed )
+hist(MRLAB3$LOGBath)
+hist(MRLAB3$LOGBath)
+
+```
+
+
+
+```{r histograms}
+par(mfrow=c(2, 3), cex=1, cex.lab=1.5)
+hist(MRLAB3$LOGSqFoot)
+hist(MRLAB3$LOGLotSize)
+hist(MRLAB3$LOGYearBuilt)
+hist(MRLAB3$LOGYearBuilt)
+
+
+```
+
+
+```{r RegLog}
+
+HouseFitlog<-lm(LOGPRICE~LOGBath+LOGBed+LOGSqFoot+LOGLotSize+LOGYearBuilt, data=MRLAB3)
+summary(HouseFitlog)
+```
+
+```{r ResidLog}
+par(mfrow=c(2, 2), cex=1.5, cex.lab=1.5)
+plot(HouseFitlog)
+
+PriceLOG.stdres <-residuals(HouseFitlog)
+summary(PriceLOG.stdres)
+
+ A<-ggplot(data=MRLAB3, aes(x=LOGBed, y=PriceLOG.stdres))+geom_point()
+ A1<-A+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+B<-ggplot(data=MRLAB3, aes(x=LOGBath, y=PriceLOG.stdres))+geom_point()
+B1<-B+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+C<-ggplot(data=MRLAB3, aes(x=LOGSqFoot, y=PriceLOG.stdres))+geom_point()
+C1<-C+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+D<-ggplot(data=MRLAB3, aes(x=LOGLotSize, y=PriceLOG.stdres))+geom_point()
+D1<-D+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+ggplot(data=MRLAB3, aes(x=LOGYearBuilt, y=PriceLOG.stdres))+geom_point()
+E1<-E+theme(axis.text=element_text(size=18),
+        axis.title=element_text(size=18,))
+figure1 <- ggarrange(A1, B1, C1, D1,E1, 
+          ncol = 3, nrow = 2, 0)
+figure1
+```
+Predictions
+
+```{r predictions}
+Price.predict=predict(lm(PRICE~BATHS+BEDS+`SQUARE FEET`+`LOT SIZE`+`YEAR BUILT`, data=MRLAB3))
+
+```
+
+
+```{r predictedvsActual}
+A<-ggplot(MRLAB3, aes(x = BEDS, y = PRICE)) +
+  geom_point()+ # Points of actual values
+  geom_point(aes(y = Price.predict), shape = 1)  # Points of predicted values
+
+B<-ggplot(MRLAB3, aes(x = BATHS, y = PRICE)) +
+  geom_point()+ # Points of actual values
+  geom_point(aes(y = Price.predict), shape = 1) # Points of predicted values
+
+C<-ggplot(MRLAB3, aes(x = `SQUARE FEET`, y = PRICE)) +
+  geom_point()+ # Points of actual values
+  geom_point(aes(y = Price.predict), shape = 1) # Points of predicted values
+
+D<-ggplot(MRLAB3, aes(x = `LOT SIZE`, y = PRICE)) +
+  geom_point()+ # Points of actual values
+  geom_point(aes(y = Price.predict), shape = 2) # Points of predicted values
+
+E<-ggplot(MRLAB3, aes(x = `YEAR BUILT`, y = PRICE)) +
+  geom_point()+ # Points of actual values
+  geom_point(aes(y = Price.predict), shape = 3) # Points of predicted values
+figure1 <- ggarrange(A, B, C, D, E, 
+          ncol = 3, nrow = 2, 0)
+figure1
+
+```
+```{r}
+mMRLab<-missing_data.frame(data.frame(MRLAB2))
+
+show(mMRLab)
+
+summary (mMRLab)
+
+imputations <- mi(mMRLab, n.iter = 30, n.chains = 4, max.minutes = 1) 
+show(imputations)
+round(mipply(imputations, mean, to.matrix = TRUE), 3)
+imputations <- mi(imputations, n.iter = 5)
+plot(imputations)
+
+Houseanalysis <- pool(PRICE ~ BEDS + BATHS + SQUARE.FEET + YEAR.BUILT + LOT.SIZE, data = imputations, m = 5)
+
+display(Houseanalysis)
+```
+
+
